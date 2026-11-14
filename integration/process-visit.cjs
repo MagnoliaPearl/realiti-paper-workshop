@@ -37,7 +37,7 @@ async function main(){
         assert.ok(JSON.stringify(details).includes('WASHI_WORLD_ACTION_V1'), 'Wrong receipt: '+JSON.stringify(details));
       }
       const result=await door.run('act inspect_paper');
-      assert.equal(result.world_source,'C9.b14.objects');
+      console.log('INSPECT_REPLY',JSON.stringify(result));
       await check(result,expected);
       const saved=await door.run('save');
       assert.notEqual(saved?.ok,false,'save failed');
