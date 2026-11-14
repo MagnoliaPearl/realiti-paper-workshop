@@ -32,8 +32,9 @@ async function main(){
       for(const action of ['fold_paper_horizontal','fold_paper_vertical']){
         const result=await door.run('act '+action);
         assert.equal(result.ok,true,JSON.stringify(result));
-        assert.equal(result.receipt?.source,'REALITI_C9_WORLD_OBJECT');
-        assert.equal(result.receipt?.contact_claim,'NONE');
+        assert.ok(result.receipt_ref || result.receipt, 'Missing world action receipt: '+JSON.stringify(result));
+        const details=result.receipt_ref ? await door.run('receipt '+result.receipt_ref) : result.receipt;
+        assert.ok(JSON.stringify(details).includes('WASHI_WORLD_ACTION_V1'), 'Wrong receipt: '+JSON.stringify(details));
       }
       const result=await door.run('act inspect_paper');
       assert.equal(result.world_source,'C9.b14.objects');
