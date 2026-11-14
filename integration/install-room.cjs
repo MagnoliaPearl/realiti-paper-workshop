@@ -104,7 +104,7 @@ D.run=async function(raw){
  if(X.room===undefined)return original(raw);
  const current=()=>window.REALITI_SLICE_ROOMS?.resolve?.(D.run===null?'':X.room);
  if(/^inspect paper$/i.test(value)){
-   const here=await original('where');
+   const here=await original('look');
    if(here?.room?.id!==X.room && here?.here?.room?.id!==X.room)
      return {ok:false,error:'NOT_IN_PAPER_WORKSHOP'};
    const result=X.inspect();
