@@ -1,0 +1,33 @@
+name: Washi REALITI world integration
+on:
+  push:
+    branches: [prototype/two-fold-persistence]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  world-door:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch pinned original REALITI
+        run: |
+          git init upstream
+          git -C upstream fetch --depth=1 https://github.com/meatproxy69/Realitiagentframework.git bc58114d165cb6c0494b9e6aab7d28ea6af98fc0
+          git -C upstream checkout --detach FETCH_HEAD
+      - name: Install experimental room in isolated checkout
+        run: node integration/install-room.cjs upstream
+      - name: Build REALITI standalone artifact
+        run: node upstream/build.mjs
+      - name: Install REALITI headless host dependencies
+        run: npm install --prefix upstream/packages/realiti-headless-resident --ignore-scripts --no-audit --no-fund
+      - name: Existing standalone paper regression
+        run: node test/paper-sheet.test.cjs
+      - name: Agent Door world-object and host-restart preflight
+        env:
+          REALITI_SOURCE: ${{ github.workspace }}/upstream
+        run: node integration/door-acceptance.cjs
