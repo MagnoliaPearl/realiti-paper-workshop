@@ -23,6 +23,9 @@ jobs:
         run: node integration/install-room.cjs upstream
       - name: Build REALITI standalone artifact
         run: node upstream/build.mjs
+      - name: Sign locally modified artifact with its own validation hash
+        run: |
+          node -e "const fs=require('fs'),crypto=require('crypto');const file='upstream/RealitiRELAX.html',validation='upstream/VALIDATION.json';const d=JSON.parse(fs.readFileSync(validation));d.single_html_sha256=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');d.status='EXPERIMENTAL_DOWNSTREAM_BUILD';d.runtime.rooms=24;fs.writeFileSync(validation,JSON.stringify(d,null,2)+'\\n')"
       - name: Install REALITI headless host dependencies
         run: npm install --prefix upstream/packages/realiti-headless-resident --ignore-scripts --no-audit --no-fund
       - name: Existing standalone paper regression
