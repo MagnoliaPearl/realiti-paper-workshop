@@ -32,6 +32,11 @@ const refold=foldSheet(returned,
   {from:[1,0.25],to:[0,0.25],angleDegrees:30});
 assert.equal(inspectSheet(refold).foldActionCount,3);
 assert.equal(inspectSheet(refold).creaseCount,2);
+assert.equal(inspectSheet(refold).recordedSegmentCount,2);
+// Contained line is a distinct recorded segment, NOT a distinct physical mark.
+const contained=foldSheet(refold,{from:[0.2,0.25],to:[0.8,0.25],angleDegrees:40});
+assert.equal(inspectSheet(contained).recordedSegmentCount,3);
+assert.equal(inspectSheet(contained).foldActionCount,4);
 assert.deepEqual(inspectSheet(refold).creases[0].foldOrders,[1,3]);
 
 // Reject invalid state consistently on save and restore.
