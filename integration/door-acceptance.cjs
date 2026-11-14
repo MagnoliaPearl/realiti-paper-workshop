@@ -29,6 +29,7 @@ async function main(){
     const rooms=await first.door.run('rooms');
     assert.ok(JSON.stringify(rooms).includes(room),'Paper Workshop was not registered in the REALITI room catalog');
     await run(first.door,'go '+room);
+    console.log('WASHI_DIAGNOSTIC_LOOK',JSON.stringify(await first.door.run('look')));
     const actions=await first.door.run('actions');
     assert.ok(JSON.stringify(actions).includes('fold_paper_'),'REALITI did not advertise paper-fold actions');
     for(const action of ['fold_paper_horizontal','fold_paper_vertical']){
