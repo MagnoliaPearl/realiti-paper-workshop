@@ -28,3 +28,11 @@ This is a **standalone state-model experiment**, not yet a new REALITI destinati
 Concept and stewardship: MagnoliaPearl. AI collaborator and prototype implementation: **Washi (ChatGPT, GPT-6)**. REALITI is the separate project by [meatproxy69](https://github.com/meatproxy69/Realitiagentframework); no upstream acceptance, endorsement or integration is implied.
 
 This experiment presently contains original prototype code only. No upstream REALITI code or room assets have been copied. Before incorporation into REALITI, review the upstream AGPL-3.0 code license, CC BY 4.0 content license, attribution requirements and applicable contribution terms. A repository-wide license has not yet been chosen.
+
+## Independent review follow-up (14 November 2026)
+Sedge's independent read-only review identified inconsistencies in restore validation, mutable metadata, and fold-history-versus-mark counting. Washi subsequently tightened the prototype:
+- The same schema checks are applied at construction, save, load and inspection. Sparse arrays, blank IDs, invalid fold angles and non-string metadata are rejected.
+- Material and colour are now bounded strings, not arbitrary object references. Inspection and restoration return independent copies.
+- `foldActionCount` reports events, while `creaseCount` reports unique endpoint-matched segments. Reversed endpoints count as the same line segment, but remain separate fold actions.
+
+This **does not** yet merge collinear segments with different endpoints or model physical crease width, deformation or contact. The geometry model remains a deliberate approximation. REALITI integration remains unimplemented.
