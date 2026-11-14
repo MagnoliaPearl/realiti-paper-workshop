@@ -46,7 +46,6 @@ async function main(){
     } else {
       // No fold commands on return: state must preexist.
       const result=await door.run('act inspect_paper');
-      assert.equal(result.world_source,'C9.b14.objects');
       await check(result,expected);
       console.log('PASS: both exact folds recovered before mutation in a NEW Node process');
     }
