@@ -77,34 +77,64 @@ b7AgentAct=function(value){
   if(['fold_paper_horizontal','fold_paper_vertical','inspect_paper'].includes(v))return washiAct(v);
   return washiAct0(value);
 };
-const washiRun0=window.REALITI_AGENT_DOOR.run;
-window.REALITI_AGENT_DOOR.run=function(raw){
-  const value=String(raw||'').trim();
-  // Entry is an explicit world transition, and is the sole creator of the
-  // initial sheet. Reading or inspecting cannot silently create an object.
-  if(/^(?:go|enter)\\s+(?:WASHI_PAPER_WORKSHOP|Washi Paper Workshop)$/i.test(value)){
-    const entered=washiRun0(raw);
-    if(entered?.ok && C9.currentRoom===WASHI_ROOM)washiSheet();
-    return entered;
-  }
-  if(C9.currentRoom===WASHI_ROOM && /^inspect paper$/i.test(value))
-    return washiAct('inspect_paper');
-  if(C9.currentRoom===WASHI_ROOM && /^look$/i.test(value)){
-    const base=washiRun0(raw),sheet=C9.b14?.objects?.[WASHI_OBJECT];
-    const paper=washiGeometry();
-    const spatial='Washi Paper Workshop: a folding table and '+(sheet?'an ivory washi sheet':'an empty work surface')+'. No positions or physical contact are asserted.';
-    const objects=sheet?[{id:sheet.id,label:sheet.label,kind:sheet.kind,room:sheet.room,
-      material:sheet.material,colour:sheet.colour,state:washiCopy(sheet.state)}]:[];
-    // The original spatial fallback describes Cloud Nine's mattress because
-    // this experimental room has no native chart yet. Never show that as a
-    // physical fact about Washi's room.
-    return {...(base&&typeof base==='object'?base:{}),objects,
-      text:spatial+(paper?' The sheet has '+paper.foldActionCount+' recorded fold actions.':''),
-      spatial_line:spatial,paper,world_source:'C9.b14.objects'};
-  }
-  return washiRun0(raw);
-};
+window.WASHI_PAPER_EXTENSION=Object.freeze({
+ room:WASHI_ROOM,
+ ensure:washiSheet,
+ view:washiGeometry,
+ inspect:()=>washiAct('inspect_paper'),
+ object:()=>C9.b14?.objects?.[WASHI_OBJECT]||null
+});
 `;
 s=s.replace(endMarker,extension+'\n'+endMarker);
 fs.writeFileSync(target,s);
+
+const latePath=path.resolve(root,'source/scripts/99b-vibe-prose.js');
+let late=fs.readFileSync(latePath,'utf8');
+const marker='// WASHI_AFTER_ALL_DOOR_LAYERS_V1';
+if(late.includes(marker))throw Error('Already installed after-final Door hook');
+late += \`
+\\n// WASHI_AFTER_ALL_DOOR_LAYERS_V1
+(()=>{
+'use strict';
+const X=window.WASHI_PAPER_EXTENSION,D=window.REALITI_AGENT_DOOR;
+if(!X||!D)throw Error('WASHI_WORLD_EXTENSION_NOT_READY');
+const original=D.run.bind(D);
+D.run=async function(raw){
+ const value=String(raw||'').trim();
+ if(X.room===undefined)return original(raw);
+ const current=()=>window.REALITI_SLICE_ROOMS?.resolve?.(D.run===null?'':X.room);
+ if(/^inspect paper$/i.test(value)){
+   const here=await original('where');
+   if(here?.room?.id!==X.room && here?.here?.room?.id!==X.room)
+     return {ok:false,error:'NOT_IN_PAPER_WORKSHOP'};
+   const result=X.inspect();
+   return {schema:'WASHI_PAPER_READ_V1',...result};
+ }
+ const response=await original(raw);
+ if(/^(?:go|enter)\\s+(?:WASHI_PAPER_WORKSHOP|Washi Paper Workshop)$/i.test(value)
+    &&response?.ok!==false && response?.here?.room?.id===X.room){
+   const paper=X.ensure();
+   const view={id:paper.id,label:paper.label,kind:paper.kind,room:paper.room,
+      material:paper.material,colour:paper.colour,state:JSON.parse(JSON.stringify(paper.state))};
+   const result=response.result||response;
+   const arrival=result.arrival||null;
+   return {...response,result:{...result,objects_here:[view],
+       ...(arrival?{arrival:{...arrival,objects_here:[view]}}:{})}};
+ }
+ if(/^look$/i.test(value) && response?.room?.id===X.room){
+   const sheet=X.object(),paper=X.view();
+   const objects=sheet?[{id:sheet.id,label:sheet.label,kind:sheet.kind,room:sheet.room,
+      material:sheet.material,colour:sheet.colour,
+      state:JSON.parse(JSON.stringify(sheet.state))}]:[];
+   const spatial='Washi Paper Workshop: a folding table and '+(sheet?'an ivory washi sheet':'an empty table')+'. No spatial coordinates or grounded contact are asserted.';
+   return {...response,objects,spatial_line:spatial,
+     text:spatial+(paper?' The sheet has '+paper.foldActionCount+' recorded fold actions.':''),
+     paper,world_source:'C9.b14.objects'};
+ }
+ return response;
+};
+})();
+\`;
+fs.writeFileSync(latePath,late);
+
 console.log('Installed isolated Washi world slice at '+target);
