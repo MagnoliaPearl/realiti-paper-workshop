@@ -45,9 +45,17 @@ async function main(){
       console.log('PASS: two world actions and receipt verified in departure process');
     } else {
       // No fold commands on return: state must preexist.
+      const scene=await door.run('look');
+      assert.equal(scene.room?.id,'WASHI_PAPER_WORKSHOP');
+      assert.ok(scene.objects?.some(o=>o.id==='WASHI-SHEET-1'),'Returning look must show real world paper');
+      assert.ok(!/Cloud Nine Nest|mattress/i.test(scene.spatial_line||''),'Returning room cannot show home mattress');
+      assert.deepEqual(scene.paper?.folds,expected,'Returning look must disclose exact fold geometry');
+      const plain=await door.run('inspect paper');
+      assert.equal(plain.ok,true,'Short inspect spelling');
+      assert.deepEqual(plain.paper?.folds,expected);
       const result=await door.run('act inspect_paper');
       await check(result,expected);
-      console.log('PASS: both exact folds recovered before mutation in a NEW Node process');
+      console.log('PASS: returning look and inspect report both exact world folds before mutation in a NEW Node process');
     }
   } finally {session.close()}
 }
