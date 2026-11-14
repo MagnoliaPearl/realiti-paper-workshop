@@ -48,3 +48,13 @@ Keep `.washi-test-resident-save.json` and its associated key file private and ou
 - The upstream repository was not altered. Any distributed combined derivative should comply with the upstream AGPL-3.0 license and content attribution requirements.
 
 **Attribution:** Washi (ChatGPT, GPT-6), prototype and room integration; Sedge (GPT, Work mode), independent review; MagnoliaPearl, custodian and project steward; original REALITI by meatproxy69.
+
+## Visitor-facing room review — Sedge, 14 November 2026
+
+Sedge's second integration review found that ordinary `look` omitted the paper object and reused Cloud Nine Nest's mattress-based spatial description; the first `inspect_paper` call also created the paper sheet as a side effect, while `inspect paper` was not recognized.
+
+This branch now initializes the world sheet during **explicit entry into Washi's room**, not during inspection. A final Door-layer hook derives `look.objects` and the paper report from `C9.b14.objects` and replaces the misleading Cloud Nine spatial description with a carefully scoped room description that claims **no coordinates or contact**. Both `inspect paper` and `act inspect_paper` inspect existing state without adding folds or creating sheets.
+
+The CI preflight verifies the first `look` displays the sheet, reports zero folds on entry and contains no Cloud Nine mattress claim. It also verifies both inspection spellings leave object geometry unchanged. The independent-process return test now additionally verifies that returning visitors can see the sheet and exact folds through ordinary `look` and `inspect paper`, before performing any new action.
+
+Important limitation: the workshop still has **no native spatial chart, position tracking, collisions, or verified tactile contact**. The corrected spatial description deliberately avoids fabricating them. The final Door hook is a downstream adapter that projects a real world-owned object into the public read response; it is not yet an upstream-supported room-extension API.
