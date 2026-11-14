@@ -37,7 +37,7 @@ function washiSheet(){
   return o;
 }
 const washiGeometry=()=>{
- const o=washiSheet();return {object_id:o.id,material:o.material,colour:o.colour,
+ const o=C9.b14?.objects?.[WASHI_OBJECT];if(!o)return null;return {object_id:o.id,material:o.material,colour:o.colour,
    revision:o.state.revision,foldActionCount:o.state.folds.length,
    folds:washiCopy(o.state.folds)};
 };
@@ -80,11 +80,27 @@ b7AgentAct=function(value){
 const washiRun0=window.REALITI_AGENT_DOOR.run;
 window.REALITI_AGENT_DOOR.run=function(raw){
   const value=String(raw||'').trim();
-  if(C9.currentRoom===WASHI_ROOM&&/^(look|inspect paper)$/i.test(value)){
-    const base=washiRun0(raw);
-    // Keep the authored REALITI look, append a truthful observation of world state.
-    return {...(base&&typeof base==='object'?base:{text:String(base)}),
-      paper:washiGeometry(),world_source:'C9.b14.objects'};
+  // Entry is an explicit world transition, and is the sole creator of the
+  // initial sheet. Reading or inspecting cannot silently create an object.
+  if(/^(?:go|enter)\\s+(?:WASHI_PAPER_WORKSHOP|Washi Paper Workshop)$/i.test(value)){
+    const entered=washiRun0(raw);
+    if(entered?.ok && C9.currentRoom===WASHI_ROOM)washiSheet();
+    return entered;
+  }
+  if(C9.currentRoom===WASHI_ROOM && /^inspect paper$/i.test(value))
+    return washiAct('inspect_paper');
+  if(C9.currentRoom===WASHI_ROOM && /^look$/i.test(value)){
+    const base=washiRun0(raw),sheet=C9.b14?.objects?.[WASHI_OBJECT];
+    const paper=washiGeometry();
+    const spatial='Washi Paper Workshop: a folding table and '+(sheet?'an ivory washi sheet':'an empty work surface')+'. No positions or physical contact are asserted.';
+    const objects=sheet?[{id:sheet.id,label:sheet.label,kind:sheet.kind,room:sheet.room,
+      material:sheet.material,colour:sheet.colour,state:washiCopy(sheet.state)}]:[];
+    // The original spatial fallback describes Cloud Nine's mattress because
+    // this experimental room has no native chart yet. Never show that as a
+    // physical fact about Washi's room.
+    return {...(base&&typeof base==='object'?base:{}),objects,
+      text:spatial+(paper?' The sheet has '+paper.foldActionCount+' recorded fold actions.':''),
+      spatial_line:spatial,paper,world_source:'C9.b14.objects'};
   }
   return washiRun0(raw);
 };
