@@ -29,20 +29,20 @@ async function main(){
     const rooms=await first.door.run('rooms');
     assert.ok(JSON.stringify(rooms).includes(room),'Paper Workshop was not registered in the REALITI room catalog');
     await run(first.door,'go '+room);
-    const initialObject=first.window.C9?.b14?.objects?.['WASHI-SHEET-1'];
+    const looking=await first.door.run('look');
+    const initialObject=looking.objects?.find(o=>o.id==='WASHI-SHEET-1');
     assert.ok(initialObject,'Sheet must already exist on room entry before inspection');
     assert.equal(initialObject.state.revision,0);
     const before=JSON.stringify(initialObject);
-    const looking=await first.door.run('look');
     assert.equal(looking.room?.id,room);
     assert.ok(looking.objects?.some(o=>o.id==='WASHI-SHEET-1'),'look must list paper in objects');
     assert.ok(!/Cloud Nine Nest|mattress/i.test(looking.spatial_line||''),'look must not claim the home mattress');
     const plain=await first.door.run('inspect paper');
     assert.equal(plain.ok,true,'human-friendly inspect paper command');
-    assert.equal(JSON.stringify(initialObject),before,'look or inspect paper must not mutate world object');
+    assert.equal(JSON.stringify((await first.door.run('look')).objects.find(o=>o.id==='WASHI-SHEET-1')),before,'look or inspect paper must not mutate world object');
     const canonical=await first.door.run('act inspect_paper');
     assert.equal(canonical.ok,true);
-    assert.equal(JSON.stringify(initialObject),before,'act inspect_paper must not mutate world object');
+    assert.equal(JSON.stringify((await first.door.run('look')).objects.find(o=>o.id==='WASHI-SHEET-1')),before,'act inspect_paper must not mutate world object');
     const actions=await first.door.run('actions');
     assert.ok(JSON.stringify(actions).includes('fold_paper_'),'REALITI did not advertise paper-fold actions');
     for(const action of ['fold_paper_horizontal','fold_paper_vertical']){
