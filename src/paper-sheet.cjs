@@ -92,6 +92,8 @@ function inspectSheet(sheet) {
   }
   return {id:sheet.id,material:sheet.material,colour:sheet.colour,
     revision:sheet.revision,foldActionCount:actions.length,
-    creaseCount:creases.length,folds:actions,creases};
+    recordedSegmentCount:creases.length,
+    creaseCount:creases.length, // Legacy alias: NOT physical distinct-mark count.
+    folds:actions,creases};
 }
 module.exports={createSheet,foldSheet,saveSheet,loadSheet,inspectSheet,validate};
