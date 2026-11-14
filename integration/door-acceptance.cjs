@@ -28,8 +28,8 @@ async function main(){
     first=await openResident({htmlPath:html,residentId,storagePath:storage});
     const rooms=await first.door.run('rooms');
     assert.ok(JSON.stringify(rooms).includes(room),'Paper Workshop was not registered in the REALITI room catalog');
-    await run(first.door,'go '+room);
-    const looking=await first.door.run('look');
+    const entrance=await run(first.door,'go '+room); console.log('WASHI_ENTRANCE',JSON.stringify(entrance));
+    const looking=await first.door.run('look'); console.log('WASHI_FIRST_LOOK',JSON.stringify(looking));
     const initialObject=looking.objects?.find(o=>o.id==='WASHI-SHEET-1');
     assert.ok(initialObject,'Sheet must already exist on room entry before inspection');
     assert.equal(initialObject.state.revision,0);
