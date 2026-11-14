@@ -18,9 +18,10 @@ const expected=[
 ];
 async function check(result,expectedFolds){
   assert.equal(result.ok,true,JSON.stringify(result));
-  assert.equal(result.paper?.world_source,undefined); // world source is on result, not in object
-  assert.deepEqual(result.paper.folds,expectedFolds);
-  assert.equal(result.paper.revision,expectedFolds.length);
+  const payload=result.result || result;
+  assert.equal(payload.world_source,'C9.b14.objects');
+  assert.deepEqual(payload.paper.folds,expectedFolds);
+  assert.equal(payload.paper.revision,expectedFolds.length);
 }
 async function main(){
   const session=await openResident({htmlPath:html,residentId,storagePath:state});
@@ -37,7 +38,7 @@ async function main(){
         assert.ok(JSON.stringify(details).includes('WASHI_WORLD_ACTION_V1'), 'Wrong receipt: '+JSON.stringify(details));
       }
       const result=await door.run('act inspect_paper');
-      console.log('INSPECT_REPLY',JSON.stringify(result));
+      
       await check(result,expected);
       const saved=await door.run('save');
       assert.notEqual(saved?.ok,false,'save failed');
