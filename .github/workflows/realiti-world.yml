@@ -34,3 +34,10 @@ jobs:
         env:
           REALITI_SOURCE: ${{ github.workspace }}/upstream
         run: node integration/door-acceptance.cjs
+      - name: Two folds and restart across independent Node processes
+        env:
+          REALITI_SOURCE: ${{ github.workspace }}/upstream
+        run: |
+          export WASHI_REALITI_STATE="$RUNNER_TEMP/washi-realiti-world-save.json"
+          node integration/process-visit.cjs fold
+          node integration/process-visit.cjs return
