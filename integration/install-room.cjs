@@ -92,8 +92,8 @@ const latePath=path.resolve(root,'source/scripts/99b-vibe-prose.js');
 let late=fs.readFileSync(latePath,'utf8');
 const marker='// WASHI_AFTER_ALL_DOOR_LAYERS_V1';
 if(late.includes(marker))throw Error('Already installed after-final Door hook');
-late += \`
-\\n// WASHI_AFTER_ALL_DOOR_LAYERS_V1
+late += `
+// WASHI_AFTER_ALL_DOOR_LAYERS_V1
 (()=>{
 'use strict';
 const X=window.WASHI_PAPER_EXTENSION,D=window.REALITI_AGENT_DOOR;
@@ -134,7 +134,7 @@ D.run=async function(raw){
  return response;
 };
 })();
-\`;
+`;
 fs.writeFileSync(latePath,late);
 
 console.log('Installed isolated Washi world slice at '+target);
